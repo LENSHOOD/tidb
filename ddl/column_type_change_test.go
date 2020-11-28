@@ -1205,9 +1205,9 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	reset(tk)
 	tk.MustExec("insert into t values ('{\"obj\": 100}', '[-1, 0, 1]', 'null', 'true', 'false', '-22', '22', '323232323.3232323232', '\"json string\"')")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '{"obj": 100}' for column 'obj' at row 1".
-	tk.MustExec("alter table t modify obj tinyint")
+	tk.MustGetErrCode("alter table t modify obj tinyint", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '[-1, 0, 1]' for column 'arr' at row 1".
-	tk.MustExec("alter table t modify arr tinyint")
+	tk.MustGetErrCode("alter table t modify arr tinyint", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'null' for column 'nil' at row 1".
 	tk.MustExec("alter table t modify nil tinyint")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'true' for column 't' at row 1".
@@ -1219,15 +1219,15 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	tk.MustGetErrCode("alter table t modify f64 tinyint", mysql.ErrDataOutOfRange)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '"json string"' for column 'str' at row 1".
 	tk.MustGetErrCode("alter table t modify str tinyint", mysql.ErrTruncatedWrongValue)
-	tk.MustQuery("select * from t").Check(testkit.Rows("0 0 0 1 0 -22 22 323232323.32323235 \"json string\""))
+	tk.MustQuery("select * from t").Check(testkit.Rows("{\"obj\": 100} [-1, 0, 1] 0 1 0 -22 22 323232323.32323235 \"json string\""))
 
 	// int
 	reset(tk)
 	tk.MustExec("insert into t values ('{\"obj\": 100}', '[-1, 0, 1]', 'null', 'true', 'false', '-22', '22', '323232323.3232323232', '\"json string\"')")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '{"obj": 100}' for column 'obj' at row 1".
-	tk.MustExec("alter table t modify obj int")
+	tk.MustGetErrCode("alter table t modify obj int", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '[-1, 0, 1]' for column 'arr' at row 1".
-	tk.MustExec("alter table t modify arr int")
+	tk.MustGetErrCode("alter table t modify arr int", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'null' for column 'nil' at row 1".
 	tk.MustExec("alter table t modify nil int")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'true' for column 't' at row 1".
@@ -1239,15 +1239,15 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	tk.MustExec("alter table t modify f64 int")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '"json string"' for column 'str' at row 1".
 	tk.MustGetErrCode("alter table t modify str int", mysql.ErrTruncatedWrongValue)
-	tk.MustQuery("select * from t").Check(testkit.Rows("0 0 0 1 0 -22 22 323232323 \"json string\""))
+	tk.MustQuery("select * from t").Check(testkit.Rows("{\"obj\": 100} [-1, 0, 1] 0 1 0 -22 22 323232323 \"json string\""))
 
 	// bigint
 	reset(tk)
 	tk.MustExec("insert into t values ('{\"obj\": 100}', '[-1, 0, 1]', 'null', 'true', 'false', '-22', '22', '323232323.3232323232', '\"json string\"')")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '{"obj": 100}' for column 'obj' at row 1".
-	tk.MustExec("alter table t modify obj bigint")
+	tk.MustGetErrCode("alter table t modify obj bigint", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '[-1, 0, 1]' for column 'arr' at row 1".
-	tk.MustExec("alter table t modify arr bigint")
+	tk.MustGetErrCode("alter table t modify arr bigint", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'null' for column 'nil' at row 1".
 	tk.MustExec("alter table t modify nil bigint")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'true' for column 't' at row 1".
@@ -1259,15 +1259,15 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	tk.MustExec("alter table t modify f64 bigint")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '"json string"' for column 'str' at row 1".
 	tk.MustGetErrCode("alter table t modify str bigint", mysql.ErrTruncatedWrongValue)
-	tk.MustQuery("select * from t").Check(testkit.Rows("0 0 0 1 0 -22 22 323232323 \"json string\""))
+	tk.MustQuery("select * from t").Check(testkit.Rows("{\"obj\": 100} [-1, 0, 1] 0 1 0 -22 22 323232323 \"json string\""))
 
 	// unsigned bigint
 	reset(tk)
 	tk.MustExec("insert into t values ('{\"obj\": 100}', '[-1, 0, 1]', 'null', 'true', 'false', '-22', '22', '323232323.3232323232', '\"json string\"')")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '{"obj": 100}' for column 'obj' at row 1".
-	tk.MustExec("alter table t modify obj bigint unsigned")
+	tk.MustGetErrCode("alter table t modify obj bigint unsigned", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '[-1, 0, 1]' for column 'arr' at row 1".
-	tk.MustExec("alter table t modify arr bigint unsigned")
+	tk.MustGetErrCode("alter table t modify arr bigint unsigned", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'null' for column 'nil' at row 1".
 	tk.MustExec("alter table t modify nil bigint unsigned")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: 'true' for column 't' at row 1".
@@ -1280,7 +1280,7 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	tk.MustExec("alter table t modify f64 bigint unsigned")
 	// MySQL will get "ERROR 1366 (HY000) Incorrect integer value: '"json string"' for column 'str' at row 1".
 	tk.MustGetErrCode("alter table t modify str bigint unsigned", mysql.ErrTruncatedWrongValue)
-	tk.MustQuery("select * from t").Check(testkit.Rows("0 0 0 1 0 -22 22 323232323 \"json string\""))
+	tk.MustQuery("select * from t").Check(testkit.Rows("{\"obj\": 100} [-1, 0, 1] 0 1 0 -22 22 323232323 \"json string\""))
 
 	// bit
 	reset(tk)
@@ -1300,9 +1300,9 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	reset(tk)
 	tk.MustExec("insert into t values ('{\"obj\": 100}', '[-1, 0, 1]', 'null', 'true', 'false', '-22', '22', '323232323.3232323232', '\"json string\"')")
 	// MySQL will get "ERROR 3156 (22001) Invalid JSON value for CAST to DECIMAL from column obj at row 1".
-	tk.MustExec("alter table t modify obj decimal(20, 10)")
+	tk.MustGetErrCode("alter table t modify obj decimal(20, 10)", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 3156 (22001) Invalid JSON value for CAST to DECIMAL from column arr at row 1".
-	tk.MustExec("alter table t modify arr decimal(20, 10)")
+	tk.MustGetErrCode("alter table t modify arr decimal(20, 10)", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 3156 (22001) Invalid JSON value for CAST to DECIMAL from column nil at row 1".
 	tk.MustExec("alter table t modify nil decimal(20, 10)")
 	tk.MustExec("alter table t modify t decimal(20, 10)")
@@ -1312,15 +1312,15 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	tk.MustExec("alter table t modify f64 decimal(20, 10)")
 	// MySQL will get "ERROR 1366 (HY000): Incorrect DECIMAL value: '0' for column '' at row -1".
 	tk.MustGetErrCode("alter table t modify str decimal(20, 10)", mysql.ErrTruncatedWrongValue)
-	tk.MustQuery("select * from t").Check(testkit.Rows("0.0000000000 0.0000000000 0.0000000000 1.0000000000 0.0000000000 -22.0000000000 22.0000000000 323232323.3232323500 \"json string\""))
+	tk.MustQuery("select * from t").Check(testkit.Rows("{\"obj\": 100} [-1, 0, 1] 0.0000000000 1.0000000000 0.0000000000 -22.0000000000 22.0000000000 323232323.3232323500 \"json string\""))
 
 	// double
 	reset(tk)
 	tk.MustExec("insert into t values ('{\"obj\": 100}', '[-1, 0, 1]', 'null', 'true', 'false', '-22', '22', '323232323.3232323232', '\"json string\"')")
 	// MySQL will get "ERROR 1265 (01000): Data truncated for column 'obj' at row 1".
-	tk.MustExec("alter table t modify obj double")
+	tk.MustGetErrCode("alter table t modify obj double", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1265 (01000): Data truncated for column 'arr' at row 1".
-	tk.MustExec("alter table t modify arr double")
+	tk.MustGetErrCode("alter table t modify arr double", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1265 (01000): Data truncated for column 'nil' at row 1".
 	tk.MustExec("alter table t modify nil double")
 	// MySQL will get "ERROR 1265 (01000): Data truncated for column 't' at row 1".
@@ -1332,7 +1332,7 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	tk.MustExec("alter table t modify f64 double")
 	// MySQL will get "ERROR 1265 (01000): Data truncated for column 'str' at row 1".
 	tk.MustGetErrCode("alter table t modify str double", mysql.ErrTruncatedWrongValue)
-	tk.MustQuery("select * from t").Check(testkit.Rows("0 0 0 1 0 -22 22 323232323.32323235 \"json string\""))
+	tk.MustQuery("select * from t").Check(testkit.Rows("{\"obj\": 100} [-1, 0, 1] 0 1 0 -22 22 323232323.32323235 \"json string\""))
 
 	// To string data types.
 	// char
@@ -1525,9 +1525,9 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	reset(tk)
 	tk.MustExec("insert into t values ('{\"obj\": 100}', '[-1, 0, 1]', 'null', 'true', 'false', '2020', '91', '9', '\"2020\"')")
 	// MySQL will get "ERROR 1366 (HY000): Incorrect integer value: '{"obj": 100}' for column 'obj' at row 1".
-	tk.MustExec("alter table t modify obj year")
+	tk.MustGetErrCode("alter table t modify obj year", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000): Incorrect integer value: '[-1, 0, 1]' for column 'arr' at row 11".
-	tk.MustExec("alter table t modify arr year")
+	tk.MustGetErrCode("alter table t modify arr year", mysql.ErrTruncatedWrongValue)
 	// MySQL will get "ERROR 1366 (HY000): Incorrect integer value: 'null' for column 'nil' at row 1".
 	tk.MustExec("alter table t modify nil year")
 	// MySQL will get "ERROR 1366 (HY000): Incorrect integer value: 'true' for column 't' at row 1".
@@ -1539,5 +1539,5 @@ func (s *testColumnTypeChangeSuite) TestColumnTypeChangeFromJsonToOthers(c *C) {
 	tk.MustExec("alter table t modify f64 year")
 	// MySQL will get "ERROR 1366 (HY000): Incorrect integer value: '"2020"' for column 'str' at row 1".
 	tk.MustExec("alter table t modify str year")
-	tk.MustQuery("select * from t").Check(testkit.Rows("0 0 0 2001 0 2020 1991 2009 2020"))
+	tk.MustQuery("select * from t").Check(testkit.Rows("{\"obj\": 100} [-1, 0, 1] 0 2001 0 2020 1991 2009 2020"))
 }

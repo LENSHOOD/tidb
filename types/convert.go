@@ -552,7 +552,7 @@ func ConvertJSONToInt64(sc *stmtctx.StatementContext, j json.BinaryJSON, unsigne
 func ConvertJSONToInt(sc *stmtctx.StatementContext, j json.BinaryJSON, unsigned bool, tp byte) (int64, error) {
 	switch j.TypeCode {
 	case json.TypeCodeObject, json.TypeCodeArray:
-		return 0, nil
+		return 0, handleTruncateError(sc, ErrTruncatedWrongVal.GenWithStackByArgs("INTEGER", j.String()))
 	case json.TypeCodeLiteral:
 		switch j.Value[0] {
 		case json.LiteralNil, json.LiteralFalse:
@@ -608,7 +608,7 @@ func ConvertJSONToInt(sc *stmtctx.StatementContext, j json.BinaryJSON, unsigned 
 func ConvertJSONToFloat(sc *stmtctx.StatementContext, j json.BinaryJSON) (float64, error) {
 	switch j.TypeCode {
 	case json.TypeCodeObject, json.TypeCodeArray:
-		return 0, nil
+		return 0, handleTruncateError(sc, ErrTruncatedWrongVal.GenWithStackByArgs("FLOAT", j.String()))
 	case json.TypeCodeLiteral:
 		switch j.Value[0] {
 		case json.LiteralNil, json.LiteralFalse:
