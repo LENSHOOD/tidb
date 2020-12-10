@@ -32,6 +32,7 @@ import (
 	"github.com/pingcap/tidb/types"
 	"github.com/pingcap/tidb/util/chunk"
 	"github.com/pingcap/tipb/go-tipb"
+	"github.com/shopspring/decimal"
 )
 
 var (
@@ -257,7 +258,7 @@ func (c *roundFunctionClass) getFunction(ctx sessionctx.Context, args []Expressi
 	}
 	argTp := args[0].GetType().EvalType()
 	if argTp != types.ETInt && argTp != types.ETDecimal {
-		argTp = types.ETReal
+		argTp = types.ETString
 	}
 	argTps := []types.EvalType{argTp}
 	if len(args) > 1 {
@@ -284,7 +285,7 @@ func (c *roundFunctionClass) getFunction(ctx sessionctx.Context, args []Expressi
 		case types.ETDecimal:
 			sig = &builtinRoundWithFracDecSig{bf}
 			sig.setPbCode(tipb.ScalarFuncSig_RoundWithFracDec)
-		case types.ETReal:
+		case types.ETString:
 			sig = &builtinRoundWithFracRealSig{bf}
 			sig.setPbCode(tipb.ScalarFuncSig_RoundWithFracReal)
 		default:
@@ -399,16 +400,17 @@ func (b *builtinRoundWithFracRealSig) Clone() builtinFunc {
 
 // evalReal evals ROUND(value, frac).
 // See https://dev.mysql.com/doc/refman/5.7/en/mathematical-functions.html#function_round
-func (b *builtinRoundWithFracRealSig) evalReal(row chunk.Row) (float64, bool, error) {
+func (b *builtinRoundWithFracRealSig) evalString(row chunk.Row) (string, bool, error) {
 	val, isNull, err := b.args[0].EvalReal(b.ctx, row)
 	if isNull || err != nil {
-		return 0, isNull, err
+		return "0", isNull, err
 	}
 	frac, isNull, err := b.args[1].EvalInt(b.ctx, row)
 	if isNull || err != nil {
-		return 0, isNull, err
+		return "0", isNull, err
 	}
-	return types.Round(val, int(frac)), false, nil
+	roundFloat := types.Round(val, int(frac))
+	return decimal.NewFromFloat(roundFloat).StringFixed(int32(frac)), false, nil
 }
 
 type builtinRoundWithFracIntSig struct {
